@@ -6,7 +6,7 @@ public class VisitaDAO {
 
     // INSERT — aggiunge una nuova visita (usa p.getId() come FK)
     public void inserisci(Visita v) {
-        String sql = "INSERT INTO visita (dataOraVisita, TipoVisita, priorità, Paziente) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO pazienti (dataOraVisita, TipoVisita, priorità, Paziente) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = DbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -25,8 +25,8 @@ public class VisitaDAO {
 
     public List<Visita> trovaTutti() {
         List<Visita> lista = new ArrayList<>();
-        String sql = "SELECT * FROM visita v " +
-                "INNER JOIN persona p ON v.Paziente = p.id_persona";
+        String sql = "SELECT * FROM prenotazioni " +
+                "INNER JOIN pazienti ON prenotazioni.Paziente = pazienti.id_persona";
 
         try (Connection conn = DbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -58,8 +58,8 @@ public class VisitaDAO {
         List<Visita> lista = new ArrayList<>();
         String sql = "SELECT v.data, v.ora, v.campo, v.priorità, " +
                 "p.id, p.nome " +
-                "FROM visita v " +
-                "JOIN persona p ON v.id_persona = p.id " +
+                "FROM prenotazioni v " +
+                "JOIN pazienti p ON v.id_persona = p.id " +
                 "WHERE p.id = ?";
 
         try (Connection conn = DbConnection.getConnection();
@@ -90,7 +90,7 @@ public class VisitaDAO {
 
     // DELETE — elimina una visita per data e id persona
     public void elimina(String data, int idPersona) {
-        String sql = "DELETE FROM visita WHERE data = ? AND id_persona = ?";
+        String sql = "DELETE FROM prenotazioni WHERE data = ? AND id_persona = ?";
 
         try (Connection conn = DbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -107,17 +107,17 @@ public class VisitaDAO {
     public void processaProssimaVisita() {
         String selectSql =
                 "SELECT id_visita, dataOraVisita, TipoVisita, `Priorità`, Paziente " +
-                        "FROM visita " +
-                        "ORDER BY `Priorità` DESC, dataOraVisita ASC " +
+                        "FROM prenotazioni " +
+                        "ORDER BY Priorità DESC, dataOraVisita ASC " +
                         "LIMIT 1";
 
         String insertRecord =
-                "INSERT INTO record (dataOraVisita, TipoVisita, `Priorità`, Paziente) " +
+                "INSERT INTO visite_effettuate (dataOraVisita, TipoVisita, Priorità, Paziente) " +
                         "SELECT dataOraVisita, TipoVisita, `Priorità`, Paziente " +
-                        "FROM visita WHERE id_visita = ?";
+                        "FROM prenotazioni WHERE id_visita = ?";
 
         String deleteVisita =
-                "DELETE FROM visita WHERE id_visita = ?";
+                "DELETE FROM prenotazioni WHERE id_visita = ?";
 
         Connection conn = null;
 
@@ -192,7 +192,7 @@ public class VisitaDAO {
     public List<Visita> trovaRecord() {
         List<Visita> lista = new ArrayList<>();
         String sql = "SELECT r.dataOraVisita, r.TipoVisita, r.priorità, p.id_persona, p.NomePersona " +
-                "FROM record r JOIN persona p ON r.Paziente = p.id_persona";
+                "FROM visite_effettuate r JOIN pazienti p ON r.Paziente = p.id_persona";
 
         try (Connection conn = DbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
