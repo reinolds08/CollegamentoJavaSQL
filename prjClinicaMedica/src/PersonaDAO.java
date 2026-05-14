@@ -6,14 +6,14 @@ public class PersonaDAO {
 
     // INSERT — aggiunge una nuova persona al database
     public void inserisci(Persona p) {
-        String sql = "INSERT INTO persona (NomePersona) VALUES (?)";
+        String sql = "INSERT INTO pazienti (NomePersona) VALUES (?)";
 
         try (Connection conn = DbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, p.getNome());
             ps.executeUpdate();
-            System.out.println("Persona inserita: " + p.getNome());
+            System.out.println("Paziente inserito: " + p.getNome());
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -46,7 +46,7 @@ public class PersonaDAO {
 
     // SELECT per ID — cerca una persona specifica
     public Persona trovaById(String id) {
-        String sql = "SELECT * FROM persona WHERE id_persona = ?";
+        String sql = "SELECT * FROM pazienti WHERE id_persona = ?";
 
         try (Connection conn = DbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -69,13 +69,13 @@ public class PersonaDAO {
     }
 
     public void aggiornaNome(int id, String nuovoNome) {
-        String sql = "UPDATE persona SET NomePersona = ? WHERE id_persona = ?";
+        String sql = "UPDATE pazienti SET NomePersona = ? WHERE id_persona = ?";
 
         try (Connection conn = DbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, nuovoNome); // primo ? → nuovo nome
-            ps.setInt(2, id);           // secondo ? → id della persona
+            ps.setString(1, nuovoNome); 
+            ps.setInt(2, id);      
             ps.executeUpdate();
 
         } catch (SQLException e) {
@@ -85,7 +85,7 @@ public class PersonaDAO {
 
     // DELETE — rimuove una persona per id
     public void elimina(String id) {
-        String sql = "DELETE FROM persona WHERE id_persona = ?";
+        String sql = "DELETE FROM pazienti WHERE id_persona = ?";
 
         try (Connection conn = DbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
