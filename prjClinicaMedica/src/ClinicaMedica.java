@@ -8,6 +8,9 @@ public class ClinicaMedica {
     private ArrayList<Persona> pazienti;
     private int maxRecord;
 
+    private PersonaDAO personaDAO;
+    private VisitaDAO visitaDAO;
+
     public ClinicaMedica(int maxRecord){
         this.visite = new ArrayDeque<>();
         this.record = new ArrayDeque<>();
@@ -15,13 +18,15 @@ public class ClinicaMedica {
         this.visiteProcessate = new ArrayList<>();
         this.pazienti = new ArrayList<>();
         this.maxRecord = maxRecord;
+        this.personaDAO = new PersonaDAO();
+        this.visitaDAO = new VisitaDAO();
     }
 
     public void addPaziente(Persona p){
         if(!pazienti.contains(p)) {
             pazienti.add(p);
             aggiungiRecord("Aggiunta di un paziente");
-
+            personaDAO.inserisci(p);
         } else {
             throw new PazientiExceptions("Il paziente è già stato inserito");
         }
@@ -30,10 +35,11 @@ public class ClinicaMedica {
     public void addVisita(Visita v){
         if(v.getPriorita()){
             urgenti.add(v);
-        }else {
+        } else {
             visite.add(v);
         }
         aggiungiRecord("Visita aggiunta correttamente");
+        visitaDAO.inserisci(v);
     }
 
     public void removeVisita(Visita v){
@@ -44,6 +50,7 @@ public class ClinicaMedica {
                 urgenti.remove(v);
             }
             aggiungiRecord("Rimozione avvenuta con successo");
+            visitaDAO.elimina(v.getDataOra(), v.getPersona().getId());
         } else {
             throw new VisitaProcessataException("Visita già processata");
         }
@@ -52,7 +59,7 @@ public class ClinicaMedica {
     public void aggiungiRecord(String mes){
         if(record.size() <= maxRecord){
             record.add(mes);
-        }else{
+        } else {
             record.removeFirst();
             record.add(mes);
         }
@@ -65,15 +72,17 @@ public class ClinicaMedica {
             temp = urgenti.poll();
             visiteProcessate.add(temp);
             aggiungiRecord("Visita urgente processata");
+            visitaDAO.processaProssimaVisita();
             return temp;
         } else if (!visite.isEmpty()) {
             temp = visite.poll();
             visiteProcessate.add(temp);
             aggiungiRecord("Visita processata");
+            visitaDAO.processaProssimaVisita();
             return temp;
         }
 
-        return null;
+        throw new VisitaProcessataException("Nessuna visita in coda da processare");
     }
 
     public String recordToString(){
@@ -82,20 +91,17 @@ public class ClinicaMedica {
 
     public String personeToString(){
         String str = "";
-
-        for(int i = 0; i < pazienti.size(); i ++){
+        for(int i = 0; i < pazienti.size(); i++){
             str += pazienti.get(i).toString();
         }
-
         return str;
     }
 
     public String visiteProcessateToString(){
         String str = "";
         for(int i = 0; i < visiteProcessate.size(); i++){
-            visiteProcessate.get(i).toString();
+            str += visiteProcessate.get(i).toString();
         }
-
         return str;
     }
 
